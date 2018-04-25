@@ -1,9 +1,14 @@
-### mapping peer ###
+### peer app ###
 
-# Mauricio H. Vancine
-# 2018-03-27
+# A Shiny web application by Mauricio H. Vancine and Thiago Sanna Freire Silva (2018)
+# A product of the Ecosystem Dynamics Observatory
+# http://tscanada.wix.com/ecodyn
 
-###-----------------------------------------------###
+# 2018-04-25
+
+# Find out more about building applications with Shiny here: http://shiny.rstudio.com/
+
+###-------------------------------------------------------------------------------------###
 
 # memory
 rm(list = ls())
@@ -11,7 +16,7 @@ rm(list = ls())
 # packages
 library(shiny)
 library(shinyjs)
-library(dashboard)
+library(shinydashboard)
 library(DT)
 library(dplyr)
 library(digest)
@@ -30,10 +35,7 @@ library(googlesheets)
 # https://ipub.com/shiny-crud-app/
 # https://gist.github.com/daattali/c4db11d81f3c46a7c4a5
 
-
-
-###-----------------------------------------------###
-
+###-------------------------------------------------------------------------------------###
 
 # fields get saved 
 fields <- c("class")
@@ -43,10 +45,8 @@ saveData <- function(data){
   data <- as.data.frame(t(data))
   if(exists("responses")){
     responses <<- rbind(responses, data)
-    
   } else{
     responses <<- data
-    
   }
 }
 
@@ -54,7 +54,6 @@ saveData <- function(data){
 loadData <- function(){
   if(exists("responses")){
     responses
-    
   }
 }
 
