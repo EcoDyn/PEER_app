@@ -71,7 +71,7 @@ shinyApp(
                     sidebarMenu(
                       
                       # menu information
-                      menuItem("Information", 
+                      menuItem("Instructions", 
                                tabName = "information",
                                icon = icon("info-circle")),
                       
@@ -81,7 +81,7 @@ shinyApp(
                                icon = icon("globe")),
                       
                       # accountants
-                      menuItem("Accountants", 
+                      menuItem("Stats", 
                                tabName = "accountants",
                                icon = icon("bar-chart-o"))
                       
@@ -97,9 +97,9 @@ shinyApp(
                               # introduction
                               column(width = 12, 
                                      fluidRow(
-                                       box(title = "Introduction", 
+                                       box(title = "Instructions", 
                                            width = NULL, 
-                                           readLines("instructions.txt"))))
+                                           includeMarkdown("instructions.md"))))
                               
                               # identification
                               # column(width = 12, 
@@ -160,15 +160,15 @@ shinyApp(
                               # introduction
                               column(width = 12, 
                                      fluidRow(
-                                       box(title = "Accountants", 
+                                       box(title = "Stats", 
                                            width = NULL, 
-                                           "Data accountants"))),
+                                           "How are we doing?"))),
                               
                               # accountants
                               column(width = 12, 
                                      fluidRow(
                                        valueBox(0, 
-                                                "Samplings", 
+                                                "Samples", 
                                                 color = "maroon",
                                                 icon = icon("globe")),
                                        valueBox(0, 
