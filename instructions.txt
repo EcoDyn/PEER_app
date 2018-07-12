@@ -1,0 +1,5 @@
+Texto explicativo do aplicativo.
+
+- Como usar
+
+- Descrição das classes
