@@ -4,7 +4,7 @@
 # A product of the Ecosystem Dynamics Observatory
 # http://tscanada.wix.com/ecodyn
 
-# 2018-07-11
+# 2018-08-07
 
 # Find out more about building applications with Shiny here: http://shiny.rstudio.com/
 
@@ -21,8 +21,18 @@ library(DT)
 library(tidyverse)
 library(leaflet)
 library(data.table)
+library(googlesheets)
 
-###-------------------------------------------------------------------------------------###
+###-----------------------------------------------------------------------------------###
+
+# load samples
+samples <- read_csv("samples.csv")
+samples
+
+# load responses
+responses.table.total <- gs_title("responses")
+responses.total <- gs_read(responses.table.total)
+responses.total <- rbind(samples, responses.total)
 
 # fields get saved 
 fields <- c("class")
@@ -30,6 +40,7 @@ fields <- c("class")
 # save a response
 saveData <- function(data){
   data <- as.data.frame(t(data))
+  data$id <- seq.int(nrow(data))
   
   if(exists("responses")){
     responses <<- rbind(responses, data)
@@ -109,7 +120,8 @@ shinyApp(
                               #              splitLayout(
                               #                textInput("name", "Name", ""),
                               #                textInput("email", "E-mail", ""),
-                              #                textInput("institution", "Institution", "")))))
+                              #                textInput("institution", "Institution", ""),
+                              # sub(" ", "-", gsub(":", "_", gsub("-", "_", as.character(Sys.time()))))))))
                       ),
                       
                       # mapping
@@ -135,17 +147,14 @@ shinyApp(
                                                    h2("Choose a land use"),
                                                    selectInput("class", 
                                                                "Class",
-                                                               choices = c("", 
-                                                                           usecolors[, 1]),
-                                                               selected = ""))),
+                                                               choices = c(usecolors[, 1])))),
                               
-                              # erase-submit
+                              # submit
                               column(width = 4,
                                      fluidRow(
                                        box(width = NULL, 
-                                           title =  "Editing and submiting data",
-                                           actionButton("remove", "Remove", width = "45%"),
-                                           actionButton("submit", "Submit", width = "45%")))),
+                                           title =  "Submit data",
+                                           actionButton("submit", "Submit", width = "100%")))),
                               
                               # data
                               column(width = 4,
@@ -164,54 +173,54 @@ shinyApp(
                                            width = NULL, 
                                            "How are we doing?"))),
                               
-                              # accountants
+                              # stats
                               column(width = 12, 
                                      fluidRow(
-                                       valueBox(0, 
+                                       valueBox(nrow(responses.total), 
                                                 "Samples", 
                                                 color = "maroon",
                                                 icon = icon("globe")),
-                                       valueBox(0, 
+                                       valueBox(nrow(responses.total[responses.total$class == as.character(usecolors[1, 1]), 2]), 
                                                 as.character(usecolors[1, 1]), 
                                                 color = "green",
                                                 icon = icon("map-marker")),
-                                       valueBox(0, 
+                                       valueBox(nrow(responses.total[responses.total$class == as.character(usecolors[2, 1]), 2]), 
                                                 as.character(usecolors[2, 1]), 
                                                 color = "green",
                                                 icon = icon("map-marker")),
-                                       valueBox(0, 
+                                       valueBox(nrow(responses.total[responses.total$class == as.character(usecolors[3, 1]), 2]), 
                                                 as.character(usecolors[3, 1]), 
                                                 color = as.character(usecolors[3, 2]),
                                                 icon = icon("map-marker")),
-                                       valueBox(0, 
+                                       valueBox(nrow(responses.total[responses.total$class == as.character(usecolors[4, 1]), 2]), 
                                                 as.character(usecolors[4, 1]), 
                                                 color = "yellow",
                                                 icon = icon("map-marker")),
-                                       valueBox(0, 
+                                       valueBox(nrow(responses.total[responses.total$class == as.character(usecolors[5, 1]), 2]), 
                                                 as.character(usecolors[5, 1]), 
                                                 color = as.character(usecolors[5, 2]),
                                                 icon = icon("map-marker")),
-                                       valueBox(0, 
+                                       valueBox(nrow(responses.total[responses.total$class == as.character(usecolors[6, 1]), 2]), 
                                                 as.character(usecolors[6, 1]), 
                                                 color = as.character(usecolors[6, 2]),
                                                 icon = icon("map-marker")),
-                                       valueBox(0, 
+                                       valueBox(nrow(responses.total[responses.total$class == as.character(usecolors[7, 1]), 2]), 
                                                 as.character(usecolors[7, 1]), 
                                                 color = as.character(usecolors[7, 2]),
                                                 icon = icon("map-marker")),
-                                       valueBox(0, 
+                                       valueBox(nrow(responses.total[responses.total$class == as.character(usecolors[8, 1]), 2]), 
                                                 as.character(usecolors[8, 1]), 
                                                 color = "black",
                                                 icon = icon("map-marker")),
-                                       valueBox(0, 
+                                       valueBox(nrow(responses.total[responses.total$class == as.character(usecolors[9, 1]), 2]), 
                                                 as.character(usecolors[9, 1]), 
                                                 color = as.character(usecolors[9, 2]),
                                                 icon = icon("map-marker")),
-                                       valueBox(0, 
+                                       valueBox(nrow(responses.total[responses.total$class == as.character(usecolors[10, 1]), 2]), 
                                                 as.character(usecolors[10, 1]), 
                                                 color = as.character(usecolors[10, 2]),
                                                 icon = icon("map-marker")),
-                                       valueBox(0, 
+                                       valueBox(nrow(responses.total[responses.total$class == as.character(usecolors[11, 1]), 2]), 
                                                 as.character(usecolors[11, 1]), 
                                                 color = "light-blue",
                                                 icon = icon("map-marker"))))
@@ -271,8 +280,20 @@ shinyApp(
           addLegend("bottomright", 
                     colors = usecolors[,2], 
                     labels = usecolors[, 1], 
-                    title = "Land use")
-        
+                    title = "Land use") %>% 
+          
+          # sample markers
+          clearMarkerClusters() %>%
+          addCircleMarkers(lng = samples$lon, 
+                           lat = samples$lat,
+                           label = paste0(nrow(samples), "-" , samples$class),
+                           labelOptions = labelOptions(noHide = TRUE, opacity = .5), 
+                           radius = 7,
+                           weight = 2.5,
+                           color =  as.character(usecolors[usecolors[, 1] == samples$class, 2]),
+                           opacity = .7,
+                           fillColor = "black",
+                           fillOpacity = .5)
       })
       
       ## store the click
@@ -298,18 +319,25 @@ shinyApp(
         req(input$map_click)
         
         data <- sapply(fields, function(x) input[[x]])
-        data <- c(data, 
-                  lon = round(input$map_click[[2]], 4), 
-                  lat = round(input$map_click[[1]], 4))
+        data <- c(
+          data, 
+          lon = round(input$map_click[[2]], 4), 
+          lat = round(input$map_click[[1]], 4))
+      })
+      
+      # when a click is made on the map, the data is saved in the form
+      observeEvent(input$map_click, {
+                saveData(data.i())
       })
       
       # show the previous responses
       output$responses <- renderDataTable({
-        datatable(saveData(data.i()),
-                  loadData(), 
-                  options = list(searching = FALSE, 
-                                 lengthChange = TRUE))
-      })
+        input$map_click
+        datatable(rbind(samples, loadData()),
+                  options = list(searching = FALSE, lengthChange = TRUE),
+                  editable = TRUE,
+                  rownames = FALSE)
+        })
       
     }
   )
