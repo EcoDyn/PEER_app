@@ -4,7 +4,7 @@
 # A product of the Ecosystem Dynamics Observatory
 # http://tscanada.wix.com/ecodyn
 
-# 2018-08-07
+# 2018-08-10
 
 # Find out more about building applications with Shiny here: http://shiny.rstudio.com/
 
@@ -40,8 +40,7 @@ fields <- c("class")
 # save a response
 saveData <- function(data){
   data <- as.data.frame(t(data))
-  data$id <- seq.int(nrow(data))
-  
+
   if(exists("responses")){
     responses <<- rbind(responses, data)
   } else{
@@ -111,17 +110,7 @@ shinyApp(
                                        box(title = "Instructions", 
                                            width = NULL, 
                                            includeMarkdown("instructions.md"))))
-                              
-                              # identification
-                              # column(width = 12, 
-                              #        fluidRow(
-                              #          box(width = NULL,
-                              #              title =  "User", 
-                              #              splitLayout(
-                              #                textInput("name", "Name", ""),
-                              #                textInput("email", "E-mail", ""),
-                              #                textInput("institution", "Institution", ""),
-                              # sub(" ", "-", gsub(":", "_", gsub("-", "_", as.character(Sys.time()))))))))
+                        
                       ),
                       
                       # mapping
@@ -147,7 +136,7 @@ shinyApp(
                                                    h2("Choose a land use"),
                                                    selectInput("class", 
                                                                "Class",
-                                                               choices = c(usecolors[, 1])))),
+                                                               choices = usecolors[, 1]))),
                               
                               # submit
                               column(width = 4,
@@ -163,7 +152,7 @@ shinyApp(
                                            title =  "Data",
                                            dataTableOutput("responses"))))),
                       
-                      # accountants
+                      # stats
                       tabItem(tabName = "accountants",
                               
                               # introduction
@@ -286,7 +275,7 @@ shinyApp(
           clearMarkerClusters() %>%
           addCircleMarkers(lng = samples$lon, 
                            lat = samples$lat,
-                           label = paste0(nrow(samples), "-" , samples$class),
+                           label = paste0(samples$id, "-" , samples$class),
                            labelOptions = labelOptions(noHide = TRUE, opacity = .5), 
                            radius = 7,
                            weight = 2.5,
@@ -296,13 +285,20 @@ shinyApp(
                            fillOpacity = .5)
       })
       
+      # click counter
+      counter <- reactiveValues(countervalue = nrow(samples)) # Defining & initializing the reactiveValues object
+      
+      observeEvent(input$map_click, {
+        counter$countervalue <- counter$countervalue + 1     # if the add button is clicked, increment the value by 1 and update it
+      })
+      
       ## store the click
       observeEvent(input$map_click, {
         leafletProxy("map") %>%
           clearMarkerClusters() %>%
           addCircleMarkers(lng = input$map_click$lng, 
                            lat = input$map_click$lat,
-                           label = paste(input$class),
+                           label = paste0(counter$countervalue, "-", input$class),
                            labelOptions = labelOptions(noHide = TRUE, opacity = 0.5), 
                            radius = 7,
                            weight = 2.5,
@@ -312,6 +308,8 @@ shinyApp(
                            fillOpacity = .5)
       })
       
+      
+      
       # whenever a field is filled, aggregate all form data
       data.i <- reactive({
         
@@ -320,6 +318,7 @@ shinyApp(
         
         data <- sapply(fields, function(x) input[[x]])
         data <- c(
+          id = counter$countervalue,
           data, 
           lon = round(input$map_click[[2]], 4), 
           lat = round(input$map_click[[1]], 4))
@@ -334,11 +333,73 @@ shinyApp(
       output$responses <- renderDataTable({
         input$map_click
         datatable(rbind(samples, loadData()),
-                  options = list(searching = FALSE, lengthChange = TRUE),
                   editable = TRUE,
-                  rownames = FALSE)
+                  rownames = FALSE,
+                  options = list(searching = FALSE, 
+                                 #displayStart = trunc((counter$countervalue + nrow(samples))/5) + 1,
+                                 pageLength = 8),
+                  class = "cell-border stripe")
         })
       
+      # submit data
+      dataModal <- function(failed = FALSE){
+        modalDialog(
+          
+          title = "Input information about your session",
+          easyClose = TRUE,
+          
+          textInput("name", "Name", placeholder = "Your name"),
+          textInput("email", "E-mail", placeholder = "Your email"),
+          textInput("institution", "Institution", placeholder = "Your institution"),
+          
+          if(failed)
+            div(tags$b("Please fill all the fields", style = "color: red;")),
+          
+          footer = tagList(
+            modalButton("Cancel"),
+            actionButton("ok", "OK")
+          )
+        )
+      }
+      
+      # show modal when button is clicked
+      observeEvent(input$submit, {
+        showModal(dataModal())
+      })
+      
+      # when OK button is pressed, attempt to send the data set
+      observeEvent(input$ok, {
+        
+        # check that data object exists and is data frame
+        if(nzchar(input$name) && nzchar(input$email) && nzchar(input$institution)) {
+          
+          try(
+            boring_ss <- gs_new(paste(input$name, input$email, input$institution, 
+                                    sub(" ", "-", gsub(":", "_", gsub("-", "_", as.character(Sys.time())))), 
+                                    sep = "-"), 
+                              ws_title = paste(input$name, input$email, input$institution, sep = "_"), 
+                              input = rbind(samples, loadData()),
+                              trim = TRUE, 
+                              verbose = FALSE),
+          boring_ss %>% 
+            gs_read()
+          )
+          
+          removeModal()
+          
+          showModal(modalDialog(
+            title = "Send data",
+            "The data was send! Thank's for your help!"
+          ))
+          
+        } else {
+          showModal(dataModal(failed = TRUE))
+        }
+        
+      })
+ 
     }
   )
 )
+
+###--------------------------------------------------------------------------------###
