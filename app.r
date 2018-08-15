@@ -373,7 +373,6 @@ shinyApp(
         # check that data object exists and is data frame
         if(nzchar(input$name) && nzchar(input$email) && nzchar(input$institution)) {
           
-          try(
             boring_ss <- gs_new(paste(input$name, input$email, input$institution, 
                                     sub(" ", "-", gsub(":", "_", gsub("-", "_", as.character(Sys.time())))), 
                                     sep = "-"), 
@@ -383,7 +382,6 @@ shinyApp(
                               verbose = FALSE),
           boring_ss %>% 
             gs_read()
-          )
           
           removeModal()
           
