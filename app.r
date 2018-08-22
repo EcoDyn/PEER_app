@@ -367,19 +367,19 @@ shinyApp(
         showModal(dataModal())
       })
       
-      # when OK button is pressed, attempt to send the data set
+    # when OK button is pressed, attempt to send the data set
       observeEvent(input$ok, {
         
         # check that data object exists and is data frame
         if(nzchar(input$name) && nzchar(input$email) && nzchar(input$institution)) {
           
-            boring_ss <- gs_new(paste(input$name, input$email, input$institution, 
+          boring_ss <- gs_new(paste(input$name, input$email, input$institution, 
                                     sub(" ", "-", gsub(":", "_", gsub("-", "_", as.character(Sys.time())))), 
                                     sep = "-"), 
                               ws_title = paste(input$name, input$email, input$institution, sep = "_"), 
                               input = rbind(samples, loadData()),
                               trim = TRUE, 
-                              verbose = FALSE),
+                              verbose = FALSE)
           boring_ss %>% 
             gs_read()
           
