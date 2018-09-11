@@ -4,7 +4,10 @@
 # A product of the Ecosystem Dynamics Observatory
 # http://tscanada.wix.com/ecodyn
 
-# 2018-08-10
+#https://stackoverflow.com/questions/42627545/reactive-unputs-with-actionbutton-in-shiny/42648162#42648162
+#https://ipub.com/shiny-crud-app/
+
+# 2018-09-10
 
 # Find out more about building applications with Shiny here: http://shiny.rstudio.com/
 
@@ -17,30 +20,26 @@ rm(list = ls())
 library(shiny)
 library(shinyjs)
 library(shinydashboard)
+library(data.table)
 library(DT)
 library(tidyverse)
 library(leaflet)
-library(data.table)
 library(googlesheets)
 
 ###-----------------------------------------------------------------------------------###
 
-# load samples
-samples <- read_csv("samples.csv")
-samples
-
 # load responses
-responses.table.total <- gs_title("responses")
-responses.total <- gs_read(responses.table.total)
-responses.total <- rbind(samples, responses.total)
+responses.gs.title <- gs_title("responses")
+responses.gs <- gs_read(responses.gs.title)
 
 # fields get saved 
 fields <- c("class")
 
 # save a response
 saveData <- function(data){
+  
   data <- as.data.frame(t(data))
-
+  
   if(exists("responses")){
     responses <<- rbind(responses, data)
   } else{
@@ -56,13 +55,12 @@ loadData <- function(){
 }
 
 # use colors
-usecolors <- cbind(use = c("Varzea Forest", "Igapo Forest", "Woodlands", "Shrubs", 
-                           "Herbaceous", "Urban", "Sand Bank", "Bare Rocks", 
+usecolors <- cbind(use = c("Varzea Forest", "Igapo Forest", "Woodlands", "Palm Swamps", 
+                           "Shrubs", "Herbaceous", "Urban", "Sand Bank", "Bare Rocks", 
                            "White Water", "Black Water", "Clear Water"),
-                   colors = c("darkgreen", "lightgreen", "teal", "orange", 
-                              "lime", "black", "yellow", "gray", 
-                              "aqua", "blue", "lightblue"))
-
+                   colors = c("green", "lightgreen", "cadetblue", "darkgreen",
+                              "orange", "beige", "black", "red", "gray", 
+                              "blue", "darkblue", "lightblue"))
 
 #### shiny app ####
 shinyApp(
@@ -90,18 +88,23 @@ shinyApp(
                                tabName = "mapping",
                                icon = icon("globe")),
                       
-                      # accountants
-                      menuItem("Stats", 
-                               tabName = "accountants",
-                               icon = icon("bar-chart-o"))
+                      # menu review
+                      menuItem("Review", 
+                               tabName = "review",
+                               icon = icon("table")),
                       
+                      # menu stats
+                      menuItem("Stats", 
+                               tabName = "stats",
+                               icon = icon("bar-chart-o"))
                     )),
+                  
                   
                   # body
                   dashboardBody(
                     tabItems(
                       
-                      # information
+                      ## information
                       tabItem(tabName = "information",
                               
                               # introduction
@@ -109,11 +112,9 @@ shinyApp(
                                      fluidRow(
                                        box(title = "Instructions", 
                                            width = NULL, 
-                                           includeMarkdown("instructions.md"))))
-                        
-                      ),
+                                           includeMarkdown("instructions.md"))))),
                       
-                      # mapping
+                      ## mapping
                       tabItem(tabName = "mapping",
                               
                               # map
@@ -130,30 +131,55 @@ shinyApp(
                                                    left = "auto", 
                                                    right = 570, 
                                                    bottom = "auto",
-                                                   width = 250, 
-                                                   height = 130,
+                                                   width = 200, 
+                                                   height = 75,
                                                    
-                                                   h2("Choose a land use"),
                                                    selectInput("class", 
-                                                               "Class",
+                                                               "Choose class",
                                                                choices = usecolors[, 1]))),
                               
-                              # submit
+                              # finish
                               column(width = 4,
                                      fluidRow(
                                        box(width = NULL, 
-                                           title =  "Submit data",
-                                           actionButton("submit", "Submit", width = "100%")))),
+                                           title =  "Finish him!",
+                                           actionButton("finish", "Finish him!", width = "100%")))),
                               
                               # data
                               column(width = 4,
                                      fluidRow(
                                        box(width = NULL, 
                                            title =  "Data",
-                                           dataTableOutput("responses"))))),
+                                           dataTableOutput("data"))))),
+                      
+                      ## review
+                      tabItem(tabName = "review",
+                              
+                              # map
+                              column(width = 8,
+                                     box(width = NULL,
+                                         leafletOutput("map_review", height = 600))),
+                              
+                              # submit
+                              column(width = 4,
+                                     fluidRow(
+                                       box(width = NULL, 
+                                           title =  "Plot or Submit data",
+                                           actionButton("submit", "Submit", width = "49%"),
+                                           actionButton("plot", "Plot points", width = "49%")))),
+                              
+                              # data
+                              column(width = 4,
+                                     fluidRow(
+                                       box(width = NULL, 
+                                           title =  "Final Data",
+                                           dataTableOutput("data_review"),
+                                           tags$script("$(document).on('click', '#data_review button', function () {
+                                                       Shiny.onInputChange('lastClickId',this.id);
+                                                       Shiny.onInputChange('lastClick', Math.random()) });"))))),
                       
                       # stats
-                      tabItem(tabName = "accountants",
+                      tabItem(tabName = "stats",
                               
                               # introduction
                               column(width = 12, 
@@ -165,152 +191,157 @@ shinyApp(
                               # stats
                               column(width = 12, 
                                      fluidRow(
-                                       valueBox(nrow(responses.total), 
-                                                "Samples", 
+                                       valueBox(nrow(responses.gs), 
+                                                "Responses", 
+                                                width = 12,
                                                 color = "maroon",
                                                 icon = icon("globe")),
-                                       valueBox(nrow(responses.total[responses.total$class == as.character(usecolors[1, 1]), 2]), 
+                                       valueBox(nrow(responses.gs[responses.gs$class == as.character(usecolors[1, 1]), 2]), 
                                                 as.character(usecolors[1, 1]), 
+                                                width = 3,
                                                 color = "green",
                                                 icon = icon("map-marker")),
-                                       valueBox(nrow(responses.total[responses.total$class == as.character(usecolors[2, 1]), 2]), 
+                                       valueBox(nrow(responses.gs[responses.gs$class == as.character(usecolors[2, 1]), 2]), 
                                                 as.character(usecolors[2, 1]), 
-                                                color = "green",
+                                                width = 3,
+                                                color = "olive",
                                                 icon = icon("map-marker")),
-                                       valueBox(nrow(responses.total[responses.total$class == as.character(usecolors[3, 1]), 2]), 
+                                       valueBox(nrow(responses.gs[responses.gs$class == as.character(usecolors[3, 1]), 2]), 
                                                 as.character(usecolors[3, 1]), 
-                                                color = as.character(usecolors[3, 2]),
+                                                width = 3,
+                                                color = "teal",
                                                 icon = icon("map-marker")),
-                                       valueBox(nrow(responses.total[responses.total$class == as.character(usecolors[4, 1]), 2]), 
+                                       valueBox(nrow(responses.gs[responses.gs$class == as.character(usecolors[4, 1]), 2]), 
                                                 as.character(usecolors[4, 1]), 
+                                                width = 3,
+                                                color = "lime",
+                                                icon = icon("map-marker")),
+                                       valueBox(nrow(responses.gs[responses.gs$class == as.character(usecolors[5, 1]), 2]), 
+                                                as.character(usecolors[5, 1]), 
+                                                width = 3,
+                                                color = "orange",
+                                                icon = icon("map-marker")),
+                                       valueBox(nrow(responses.gs[responses.gs$class == as.character(usecolors[6, 1]), 2]), 
+                                                as.character(usecolors[6, 1]), 
+                                                width = 3,
                                                 color = "yellow",
                                                 icon = icon("map-marker")),
-                                       valueBox(nrow(responses.total[responses.total$class == as.character(usecolors[5, 1]), 2]), 
-                                                as.character(usecolors[5, 1]), 
-                                                color = as.character(usecolors[5, 2]),
-                                                icon = icon("map-marker")),
-                                       valueBox(nrow(responses.total[responses.total$class == as.character(usecolors[6, 1]), 2]), 
-                                                as.character(usecolors[6, 1]), 
-                                                color = as.character(usecolors[6, 2]),
-                                                icon = icon("map-marker")),
-                                       valueBox(nrow(responses.total[responses.total$class == as.character(usecolors[7, 1]), 2]), 
+                                       valueBox(nrow(responses.gs[responses.gs$class == as.character(usecolors[7, 1]), 2]), 
                                                 as.character(usecolors[7, 1]), 
-                                                color = as.character(usecolors[7, 2]),
-                                                icon = icon("map-marker")),
-                                       valueBox(nrow(responses.total[responses.total$class == as.character(usecolors[8, 1]), 2]), 
-                                                as.character(usecolors[8, 1]), 
+                                                width = 3,
                                                 color = "black",
                                                 icon = icon("map-marker")),
-                                       valueBox(nrow(responses.total[responses.total$class == as.character(usecolors[9, 1]), 2]), 
+                                       valueBox(nrow(responses.gs[responses.gs$class == as.character(usecolors[8, 1]), 2]), 
+                                                as.character(usecolors[8, 1]), 
+                                                width = 3,
+                                                color = "yellow",
+                                                icon = icon("map-marker")),
+                                       valueBox(nrow(responses.gs[responses.gs$class == as.character(usecolors[9, 1]), 2]), 
                                                 as.character(usecolors[9, 1]), 
-                                                color = as.character(usecolors[9, 2]),
+                                                width = 3,
+                                                color = "black",
                                                 icon = icon("map-marker")),
-                                       valueBox(nrow(responses.total[responses.total$class == as.character(usecolors[10, 1]), 2]), 
+                                       valueBox(nrow(responses.gs[responses.gs$class == as.character(usecolors[10, 1]), 2]), 
                                                 as.character(usecolors[10, 1]), 
-                                                color = as.character(usecolors[10, 2]),
-                                                icon = icon("map-marker")),
-                                       valueBox(nrow(responses.total[responses.total$class == as.character(usecolors[11, 1]), 2]), 
-                                                as.character(usecolors[11, 1]), 
+                                                width = 3,
                                                 color = "light-blue",
+                                                icon = icon("map-marker")),
+                                       valueBox(nrow(responses.gs[responses.gs$class == as.character(usecolors[11, 1]), 2]), 
+                                                as.character(usecolors[11, 1]), 
+                                                width = 3,
+                                                color = "navy",
+                                                icon = icon("map-marker")),
+                                       valueBox(nrow(responses.gs[responses.gs$class == as.character(usecolors[1, 1]), 2]), 
+                                                as.character(usecolors[12, 1]), 
+                                                width = 3,
+                                                color = "blue",
                                                 icon = icon("map-marker"))))
                       )
-                    )
-                  )
+                                       )
+                                     )
     )
-  ),
+),
+
+### server
+shinyServer(
   
-  ### server
-  shinyServer(
+  function(input, output, session){
     
-    function(input, output, session){
+    ### mapping 
+    ## icon
+    icons.response.gs <- awesomeIcons(icon = "check-circle", 
+                                      library = "fa", 
+                                      iconColor = "grasy50",
+                                      markerColor = as.character(usecolors[usecolors[, 1] == responses.gs$class, 2]))
+    
+    ## map 
+    output$map <- renderLeaflet({
       
-      ## map 
-      output$map <- renderLeaflet({
+      # add map
+      leaflet() %>% 
         
-        leaflet() %>% 
-          
-          addTiles() %>%
-          
-          # add two tiles
-          addProviderTiles("Esri.WorldImagery", group = "Satelite") %>%
-          
-          # layer control
-          addLayersControl(
-            baseGroups = c("Satelite", "Basemap"), 
-            options = layersControlOptions(collapsed = TRUE)) %>%
-          
-          # zoom
-          setView(-63, -4, zoom = 6) %>%
-          
-          # back zoom
-          addEasyButton(easyButton(
-            icon = "fa-globe",
-            title = "Back zoom",
-            onClick = JS("function(btn, map){ map.setView([-5, -63], 6); }"))) %>%
-          
-          # rectangle
-          addRectangles(
-            lng1 = -68, lat1 = -1,
-            lng2 = -58, lat2 = -6,
-            fillColor = "transparent") %>%
-          
-          # minimap
-          addMiniMap(
-            tiles = providers$Esri.WorldStreetMap,
-            position = "bottomleft", 
-            zoomLevelOffset = -4,
-            toggleDisplay = TRUE) %>%
-          
-          # scalebar
-          addScaleBar(
-            position = "bottomleft") %>%
-          
-          # legend
-          addLegend("bottomright", 
-                    colors = usecolors[,2], 
-                    labels = usecolors[, 1], 
-                    title = "Land use") %>% 
-          
-          # sample markers
-          clearMarkerClusters() %>%
-          addCircleMarkers(lng = samples$lon, 
-                           lat = samples$lat,
-                           label = paste0(samples$id, "-" , samples$class),
-                           labelOptions = labelOptions(noHide = TRUE, opacity = .5), 
-                           radius = 7,
-                           weight = 2.5,
-                           color =  as.character(usecolors[usecolors[, 1] == samples$class, 2]),
-                           opacity = .7,
-                           fillColor = "black",
-                           fillOpacity = .5)
-      })
+        # add tiles
+        addTiles() %>%
+        
+        # specif the tiles
+        addProviderTiles("Esri.WorldImagery", 
+                         group = "Satelite",
+                         options = providerTileOptions(minZoom = 5)) %>%
+        
+        # layer control
+        addLayersControl(
+          baseGroups = c("Satelite", "Basemap"), 
+          options = layersControlOptions(collapsed = TRUE)) %>%
+        
+        # zoom
+        setView(-56, -6, zoom = 5) %>%
+        
+        # back zoom
+        addEasyButton(easyButton(
+          icon = "fa-globe",
+          title = "Back zoom",
+          onClick = JS("function(btn, map){ map.setView([-4, -56], 5); }"))) %>%
+        
+        # rectangle
+        addRectangles(
+          lng1 = -68, lat1 = 0.5,
+          lng2 = -48, lat2 = -6,
+          fillColor = "transparent") %>%
+        
+        # minimap
+        addMiniMap(
+          tiles = providers$Esri.WorldStreetMap,
+          position = "bottomleft", 
+          zoomLevelOffset = -4,
+          toggleDisplay = TRUE) %>%
+        
+        # scalebar
+        addScaleBar(
+          position = "bottomleft") %>%
+        
+        # legend
+        addLegend("bottomright", 
+                  labels = usecolors[, 1], 
+                  colors = usecolors[, 2],
+                  title = "Land use") %>% 
+        
+        # sample markers
+        addAwesomeMarkers(lng = responses.gs$lon, 
+                          lat = responses.gs$lat,
+                          label = paste0(responses.gs$id, "-", responses.gs$class),
+                          labelOptions = labelOptions(noHide = FALSE, opacity = .5),
+                          icon = icons.response.gs)
+    })
+    
+    
+    ## click counter
+    counter <- reactiveValues(countervalue = 0)
+    
+    ## store the click
+    observeEvent(input$map_click, {
       
-      # click counter
-      counter <- reactiveValues(countervalue = nrow(samples)) # Defining & initializing the reactiveValues object
+      counter$countervalue <- counter$countervalue + 1
       
-      observeEvent(input$map_click, {
-        counter$countervalue <- counter$countervalue + 1     # if the add button is clicked, increment the value by 1 and update it
-      })
-      
-      ## store the click
-      observeEvent(input$map_click, {
-        leafletProxy("map") %>%
-          clearMarkerClusters() %>%
-          addCircleMarkers(lng = input$map_click$lng, 
-                           lat = input$map_click$lat,
-                           label = paste0(counter$countervalue, "-", input$class),
-                           labelOptions = labelOptions(noHide = TRUE, opacity = 0.5), 
-                           radius = 7,
-                           weight = 2.5,
-                           color =  as.character(usecolors[usecolors[, 1] == input$class, 2]),
-                           opacity = .7,
-                           fillColor = "black",
-                           fillOpacity = .5)
-      })
-      
-      
-      
-      # whenever a field is filled, aggregate all form data
       data.i <- reactive({
         
         req(input$class)
@@ -319,85 +350,219 @@ shinyApp(
         data <- sapply(fields, function(x) input[[x]])
         data <- c(
           id = counter$countervalue,
-          data, 
-          lon = round(input$map_click[[2]], 4), 
+          data,
+          lon = round(input$map_click[[2]], 4),
           lat = round(input$map_click[[1]], 4))
       })
       
-      # when a click is made on the map, the data is saved in the form
-      observeEvent(input$map_click, {
-                saveData(data.i())
-      })
+      saveData(data.i())
       
-      # show the previous responses
-      output$responses <- renderDataTable({
-        input$map_click
-        datatable(rbind(samples, loadData()),
-                  editable = TRUE,
-                  rownames = FALSE,
-                  options = list(searching = FALSE, 
-                                 #displayStart = trunc((counter$countervalue + nrow(samples))/5) + 1,
-                                 pageLength = 8),
-                  class = "cell-border stripe")
-        })
+      icons.click.map <- awesomeIcons(icon = "circle",
+                                      library = "fa",
+                                      iconColor = "gray50",
+                                      markerColor = as.character(usecolors[usecolors[, 1] == input$class, 2]))
       
-      # submit data
-      dataModal <- function(failed = FALSE){
-        modalDialog(
-          
-          title = "Input information about your session",
-          easyClose = TRUE,
-          
-          textInput("name", "Name", placeholder = "Your name"),
-          textInput("email", "E-mail", placeholder = "Your email"),
-          textInput("institution", "Institution", placeholder = "Your institution"),
-          
-          if(failed)
-            div(tags$b("Please fill all the fields", style = "color: red;")),
-          
-          footer = tagList(
-            modalButton("Cancel"),
-            actionButton("ok", "OK")
-          )
+      leafletProxy("map") %>%
+        addAwesomeMarkers(lng = input$map_click$lng,
+                          lat = input$map_click$lat,
+                          label = paste0(counter$countervalue, " - ", input$class),
+                          labelOptions = labelOptions(noHide = FALSE, opacity = .5),
+                          icon = icons.click.map)
+    })
+    
+    # show the previous responses
+    output$data <- renderDataTable({
+      input$map_click
+      datatable(loadData(),
+                rownames = FALSE,
+                options = list(searching = FALSE, pageLength = 8),
+                class = "cell-border stripe")
+    })
+    
+    
+    ### review 
+    
+    ## map 
+    output$map_review <- renderLeaflet({
+      
+      # add map
+      leaflet() %>% 
+        
+        # add tiles
+        addTiles() %>%
+        
+        # specif the tiles
+        addProviderTiles("Esri.WorldImagery", 
+                         group = "Satelite",
+                         options = providerTileOptions(minZoom = 5)) %>%
+        
+        # layer control
+        addLayersControl(
+          baseGroups = c("Satelite", "Basemap"), 
+          options = layersControlOptions(collapsed = TRUE)) %>%
+        
+        # zoom
+        setView(-56, -6, zoom = 5) %>%
+        
+        # back zoom
+        addEasyButton(easyButton(
+          icon = "fa-globe",
+          title = "Back zoom",
+          onClick = JS("function(btn, map){ map.setView([-4, -56], 5); }"))) %>%
+        
+        # rectangle
+        addRectangles(
+          lng1 = -68, lat1 = 0.5,
+          lng2 = -48, lat2 = -6,
+          fillColor = "transparent") %>%
+        
+        # minimap
+        addMiniMap(
+          tiles = providers$Esri.WorldStreetMap,
+          position = "bottomleft", 
+          zoomLevelOffset = -4,
+          toggleDisplay = TRUE) %>%
+        
+        # scalebar
+        addScaleBar(
+          position = "bottomleft") %>%
+        
+        # legend
+        addLegend("bottomright", 
+                  labels = usecolors[, 1], 
+                  colors = usecolors[, 2],
+                  title = "Land use")
+    })
+    
+    
+    
+    ## review data
+    vals <- reactiveValues()
+    
+    observeEvent(input$finish, {
+      req(input$finish)
+      vals$Data <- data.table(loadData())
+        showModal(modalDialog(
+          title = "Data to review",
+          "The data was sended to review!"
+        ))
+    })
+    
+    output$data_review <- renderDataTable({
+      input$finish
+      req(input$finish)
+      DT <- vals$Data
+      DT[["Actions"]] <- paste0('<div class="btn-group" role="group" aria-label="Basic example">
+                                <button type="button" class="btn btn-secondary delete" id=delete_', 1:nrow(vals$Data), '>Delete</button>
+                                </div>')
+      datatable(DT, rownames = FALSE, class = "cell-border stripe", escape = FALSE, 
+                options = list(searching = FALSE, pageLength = 6))
+    })
+    
+    observeEvent(input$lastClick,
+                 {
+                   if(input$lastClickId %like% "delete")
+                   {
+                     row_to_del <- as.numeric(gsub("delete_", "", input$lastClickId))
+                     vals$Data <- vals$Data[-row_to_del]
+                   }
+                 }
+    )
+    
+    ## icons in map
+    observeEvent(input$plot, {
+      req(input$plot)
+      
+      # icons.click.map <- awesomeIcons(icon = "question-circle",
+      #                                 library = "fa",
+      #                                 iconColor = "gray70",
+      #                                 markerColor = left_join(data.table(use = as.character(vals$Data$class)), data.table(usecolors))[, 2])
+      # 
+      # leafletProxy(map = "map_review", data = data.table(vals$Data)) %>%
+      #   clearMarkers() %>%
+      #   addAwesomeMarkers(lng = ~as.numeric(as.character(lon)),
+      #                     lat = ~as.numeric(as.character(lat)),
+      #                     label = ~as.character(paste0(id, " - ", class)),
+      #                     labelOptions = labelOptions(noHide = TRUE, opacity = .5),
+      #                     icon = icons.click.map)
+      
+      
+      leafletProxy(map = "map_review", data = data.table(vals$Data)) %>%
+        clearMarkers() %>%
+        addCircleMarkers(
+          lng = ~as.numeric(as.character(lon)),
+          lat = ~as.numeric(as.character(lat)),
+          label = ~as.character(paste0(id, " - ", class)),
+          color = ~left_join(data.table(use = as.character(vals$Data$class)), data.table(usecolors))[, 2],
+          opacity = .7,
+          fill = TRUE,
+          fillColor = "black",
+          fillOpacity = .7,
+          weight = 3,
+          radius = 8,
+          labelOptions = labelOptions(noHide = TRUE, opacity = .5))
+      
+    })
+    
+    ## submit data
+    dataModal <- function(failed = FALSE){
+      
+      modalDialog(
+        
+        title = "Input information about your session",
+        easyClose = TRUE,
+        
+        textInput("name", "Name", placeholder = "Your name"),
+        textInput("email", "E-mail", placeholder = "Your email"),
+        textInput("institution", "Institution", placeholder = "Your institution"),
+        
+        span("After giving 'OK', sending the data may take a while"),
+        
+        if(failed)
+          div(tags$b("Please fill in all of the required fields", 
+                     style = "color: red;")),
+        
+        footer = tagList(
+          modalButton("Cancel"),
+          actionButton("ok", "OK")
         )
+      )
+    }
+    
+    # show modal when button is clicked
+    observeEvent(input$submit, {
+      showModal(dataModal())
+    })
+    
+    # when OK button is pressed, attempt to send the data set
+    observeEvent(input$ok, {
+      
+      # check that data object exists and is data frame
+      if(nzchar(input$name) && nzchar(input$email) && nzchar(input$institution)) {
+        
+        da.gs <- gs_new(paste(input$name, input$email, input$institution,
+                              sub(" ", "_", gsub(":", "-", as.character(Sys.time())))),
+                        ws_title = paste(input$name, input$email, input$institution, sep = "_"),
+                        input = as.data.table(vals$Data),
+                        trim = TRUE,
+                        verbose = FALSE) %>%
+          gs_read()
+        
+        removeModal()
+        
+        showModal(modalDialog(
+          title = "Send data",
+          "The data was send! Thank's for your help!"
+        ))
+        
+      } else {
+        showModal(dataModal(failed = TRUE))
       }
       
-      # show modal when button is clicked
-      observeEvent(input$submit, {
-        showModal(dataModal())
-      })
-      
-    # when OK button is pressed, attempt to send the data set
-      observeEvent(input$ok, {
-        
-        # check that data object exists and is data frame
-        if(nzchar(input$name) && nzchar(input$email) && nzchar(input$institution)) {
-          
-          boring_ss <- gs_new(paste(input$name, input$email, input$institution, 
-                                    sub(" ", "-", gsub(":", "_", gsub("-", "_", as.character(Sys.time())))), 
-                                    sep = "-"), 
-                              ws_title = paste(input$name, input$email, input$institution, sep = "_"), 
-                              input = rbind(samples, loadData()),
-                              trim = TRUE, 
-                              verbose = FALSE)
-          boring_ss %>% 
-            gs_read()
-          
-          removeModal()
-          
-          showModal(modalDialog(
-            title = "Send data",
-            "The data was send! Thank's for your help!"
-          ))
-          
-        } else {
-          showModal(dataModal(failed = TRUE))
-        }
-        
-      })
- 
-    }
-  )
+    })
+    
+  }
 )
+    )
 
 ###--------------------------------------------------------------------------------###
