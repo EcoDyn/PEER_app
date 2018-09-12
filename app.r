@@ -7,14 +7,14 @@
 #https://stackoverflow.com/questions/42627545/reactive-unputs-with-actionbutton-in-shiny/42648162#42648162
 #https://ipub.com/shiny-crud-app/
 
-# 2018-09-10
+# 2018-09-12
 
 # Find out more about building applications with Shiny here: http://shiny.rstudio.com/
 
 ###-------------------------------------------------------------------------------------###
 
 # memory
-rm(list = ls())
+rm(list = ls(envir = .GlobalEnv), envir = .GlobalEnv)
 
 # packages
 library(shiny)
@@ -61,6 +61,7 @@ usecolors <- cbind(use = c("Varzea Forest", "Igapo Forest", "Woodlands", "Palm S
                    colors = c("green", "lightgreen", "cadetblue", "darkgreen",
                               "orange", "beige", "black", "red", "gray", 
                               "blue", "darkblue", "lightblue"))
+
 
 #### shiny app ####
 shinyApp(
@@ -127,15 +128,16 @@ shinyApp(
                                                    style = "padding-left: 5px; padding-right: 5px; padding-top: 5px; padding-bottom: 5px; opacity: 0.7; background: LightGray; border: gray",
                                                    fixed = TRUE,
                                                    draggable = TRUE,
-                                                   top = 80, 
+                                                   top = 100, 
                                                    left = "auto", 
-                                                   right = 570, 
+                                                   right = 500, 
                                                    bottom = "auto",
-                                                   width = 200, 
-                                                   height = 75,
+                                                   width = 250, 
+                                                   height = 110,
                                                    
-                                                   selectInput("class", 
-                                                               "Choose class",
+                                                   h4("Choose class", align = "center"),
+                                                   selectInput("class",
+                                                               "(Before click, adjust zoom to 200 m!)",
                                                                choices = usecolors[, 1]))),
                               
                               # finish
@@ -165,14 +167,15 @@ shinyApp(
                                      fluidRow(
                                        box(width = NULL, 
                                            title =  "Plot or Submit data",
-                                           actionButton("submit", "Submit", width = "49%"),
-                                           actionButton("plot", "Plot points", width = "49%")))),
+                                           actionButton("submit", "Submit data", width = "49%"),
+                                           actionButton("plot", "Refresh points", width = "49%")))),
                               
                               # data
                               column(width = 4,
                                      fluidRow(
                                        box(width = NULL, 
                                            title =  "Final Data",
+                                           helpText("Click in 'Refresh points' to show removed points"),
                                            dataTableOutput("data_review"),
                                            tags$script("$(document).on('click', '#data_review button', function () {
                                                        Shiny.onInputChange('lastClickId',this.id);
@@ -442,17 +445,17 @@ shinyServer(
     observeEvent(input$finish, {
       req(input$finish)
       vals$Data <- data.table(loadData())
-        showModal(modalDialog(
-          title = "Data to review",
-          "The data was sended to review!"
-        ))
+      showModal(modalDialog(
+        title = "Data to review",
+        "The data was sended to review!"
+      ))
     })
     
     output$data_review <- renderDataTable({
       input$finish
       req(input$finish)
       DT <- vals$Data
-      DT[["Actions"]] <- paste0('<div class="btn-group" role="group" aria-label="Basic example">
+      DT[["actions"]] <- paste0('<div class="btn-group" role="group" aria-label="Basic example">
                                 <button type="button" class="btn btn-secondary delete" id=delete_', 1:nrow(vals$Data), '>Delete</button>
                                 </div>')
       datatable(DT, rownames = FALSE, class = "cell-border stripe", escape = FALSE, 
@@ -496,11 +499,19 @@ shinyServer(
           color = ~left_join(data.table(use = as.character(vals$Data$class)), data.table(usecolors))[, 2],
           opacity = .7,
           fill = TRUE,
-          fillColor = "black",
-          fillOpacity = .7,
-          weight = 3,
+          fillColor = "white",
+          fillOpacity = 0,
+          weight = 5,
           radius = 8,
           labelOptions = labelOptions(noHide = TRUE, opacity = .5))
+      
+      # leafletProxy(map = "map_review", data = data.table(vals$Data)) %>%
+      #   clearMarkers() %>%
+      #   addMarkers(
+      #     lng = ~as.numeric(as.character(lon)),
+      #     lat = ~as.numeric(as.character(lat)),
+      #     label = ~as.character(paste0(id, " - ", class)),
+      #     icon = makeIcon("icon.png", "icon.png@2x.png", 18, 18))
       
     })
     
@@ -560,9 +571,9 @@ shinyServer(
       }
       
     })
-    
-  }
+  
+  })
+
 )
-    )
 
 ###--------------------------------------------------------------------------------###
