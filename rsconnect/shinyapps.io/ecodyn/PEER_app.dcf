@@ -1,0 +1,12 @@
+name: PEER_app
+title: PEER_app
+username:
+account: ecodyn
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 378382
+bundleId: 1582170
+url: https://ecodyn.shinyapps.io/PEER_app/
+when: 1536761850.1119
+asMultiple: FALSE
+asStatic: FALSE
