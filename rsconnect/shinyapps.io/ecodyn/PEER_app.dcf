@@ -5,8 +5,9 @@ account: ecodyn
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 378382
-bundleId: 1582170
+bundleId: 1588771
 url: https://ecodyn.shinyapps.io/PEER_app/
-when: 1536761850.1119
+when: 1537142231.91827
 asMultiple: FALSE
 asStatic: FALSE
+ignoredFiles: app_eng.r|instructions_eng.md|logo_ecodyn.png|photos

@@ -70,29 +70,29 @@ shinyApp(
     dashboardPage(title = "PEER Mapping",
                   
                   # title
-                  dashboardHeader(title = "Projeto PEER"),
+                  dashboardHeader(title = "PEER Mapping"),
                   
                   # side bar
                   dashboardSidebar(
                     sidebarMenu(
                       
                       # menu information
-                      menuItem("Instruções", 
+                      menuItem("Instructions", 
                                tabName = "information",
                                icon = icon("info-circle")),
                       
                       # menu mapping
-                      menuItem("Seleção de Amostras", 
+                      menuItem("Mapping", 
                                tabName = "mapping",
                                icon = icon("globe")),
                       
                       # menu review
-                      menuItem("Revisão", 
+                      menuItem("Review", 
                                tabName = "review",
                                icon = icon("eye")),
                       
                       # menu stats
-                      menuItem("Estatísticas", 
+                      menuItem("Stats", 
                                tabName = "stats",
                                icon = icon("bar-chart-o"))
                     )),
@@ -108,7 +108,7 @@ shinyApp(
                               # introduction
                               column(width = 12, 
                                      fluidRow(
-                                       box(title = "Instruções", 
+                                       box(title = "Instructions", 
                                            width = NULL, 
                                            includeMarkdown("instructions.md"))))),
                       
@@ -126,20 +126,20 @@ shinyApp(
                                        
                                        # choose class
                                        box(width = NULL,
-                                           title = "Escolha a classe a ser identificada:",
+                                           title = "Choose class",
                                            selectInput("class",
-                                                       "(Antes de clicar, aproxime o zoom até 200 m!)",
+                                                       "(Before click, adjust zoom to 200 m!)",
                                                        choices = usecolors[, 1])),
                                        
                                        # data
                                        box(width = NULL, 
-                                           title =  "Pontos Coletados",
+                                           title =  "Data",
                                            dataTableOutput("data")),
                                        
                                        # send data to review
                                        box(width = NULL, 
-                                           title =  "Clique aqui para finalizar (não é possível adicionar pontos depois!)",
-                                           actionButton("finish", "Finalizar!", width = "100%"))))),
+                                           title =  "Finish him!",
+                                           actionButton("finish", "Finish him!", width = "100%"))))),
                       
                       ## review
                       tabItem(tabName = "review",
@@ -153,17 +153,16 @@ shinyApp(
                               column(width = 4,
                                      fluidRow(
                                        box(width = NULL, 
-                                           title =  "Plotar pontos ou finalizar envio de dados",
-                                           actionButton("submit", "Enviar dados!", width = "49%"),
-                                           actionButton("plot", "Redesenhar pontos", width = "49%")))),
+                                           title =  "Plot or Submit data",
+                                           actionButton("submit", "Submit data", width = "49%"),
+                                           actionButton("plot", "Refresh points", width = "49%")))),
                               
                               # data
                               column(width = 4,
                                      fluidRow(
                                        box(width = NULL, 
-                                           title =  "Revise sua seleção e remova pontos se necessário.",
-                                           helpText("Após remover pontos, clique em 'Redesenhar pontos' para atualizar o mapa.
-                                                    Ao finalizar, clique em 'Enviar Dados'."),
+                                           title =  "Final Data",
+                                           helpText("Click in 'Refresh points' to show removed points"),
                                            dataTableOutput("data_review"),
                                            tags$script("$(document).on('click', '#data_review button', function () {
                                                        Shiny.onInputChange('lastClickId',this.id);
@@ -177,7 +176,7 @@ shinyApp(
                                      fluidRow(
                                        box(title = "Stats", 
                                            width = NULL, 
-                                           "Como estamos progredindo?"))),
+                                           "How are we doing?"))),
                               
                               # stats
                               column(width = 12, 
@@ -432,8 +431,8 @@ shinyApp(
         req(input$finish)
         vals$Data <- data.table(loadData())
         showModal(modalDialog(
-          title = "Fim da coleta",
-          "Coleta finalizada, vá para a aba 'Revisão'!"
+          title = "Data to review",
+          "The data was sended to review!"
         ))
       })
       
@@ -484,21 +483,21 @@ shinyApp(
         
         modalDialog(
           
-          title = "Preencha suas informações, para que possamos entrar em contato em caso de dúvidas!",
+          title = "Input information about your session",
           easyClose = TRUE,
           
-          textInput("name", "Nome", placeholder = "Seu nome"),
-          textInput("email", "E-mail", placeholder = "Seu e-mail"),
-          textInput("institution", "Instituição", placeholder = "Sua instituição"),
+          textInput("name", "Name", placeholder = "Your name"),
+          textInput("email", "E-mail", placeholder = "Your email"),
+          textInput("institution", "Institution", placeholder = "Your institution"),
           
-          span("Depois de clicar 'OK', aguarde! O envio pode levar alguns segundos."),
+          span("After giving 'OK', sending the data may take a while"),
           
           if(failed)
-            div(tags$b("Por favor preencha todos os campos!", 
+            div(tags$b("Please fill in all of the required fields", 
                        style = "color: red;")),
           
           footer = tagList(
-            modalButton("Cancelar"),
+            modalButton("Cancel"),
             actionButton("ok", "OK")
           )
         )
@@ -526,8 +525,8 @@ shinyApp(
           removeModal()
           
           showModal(modalDialog(
-            title = "Dados Enviados",
-            "Os dados foram enviados com sucesso! Muito obrigado por sua contribuição!"
+            title = "Send data",
+            "The data was send! Thank's for your help!"
           ))
           
         } else {
