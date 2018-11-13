@@ -89,7 +89,7 @@ shinyApp(
                       # menu review
                       menuItem("Revisão", 
                                tabName = "review",
-                               icon = icon("eye")),
+                               icon = icon("eye"))
                     )),
                   
                   
