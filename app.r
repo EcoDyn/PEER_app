@@ -90,11 +90,6 @@ shinyApp(
                       menuItem("Revisão", 
                                tabName = "review",
                                icon = icon("eye")),
-                      
-                      # menu stats
-                      menuItem("Estatísticas", 
-                               tabName = "stats",
-                               icon = icon("bar-chart-o"))
                     )),
                   
                   
