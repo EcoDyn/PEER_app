@@ -150,14 +150,14 @@ shinyApp(
                                        box(width = NULL, 
                                            title =  "Plotar pontos ou finalizar envio de dados",
                                            actionButton("submit", "Enviar dados!", width = "49%"),
-                                           actionButton("plot", "Redesenhar pontos", width = "49%")))),
+                                           actionButton("plot", "Desenhar pontos", width = "49%")))),
                               
                               # data
                               column(width = 4,
                                      fluidRow(
                                        box(width = NULL, 
                                            title =  "Revise sua seleção e remova pontos se necessário.",
-                                           helpText("Após remover pontos, clique em 'Redesenhar pontos' para atualizar o mapa.
+                                           helpText("Clique em 'Desenhar Pontos' para visualizar os pontos selecionados. É preciso clicar novamente cada vez que um ponto seja excluído.
                                                     Ao finalizar, clique em 'Enviar Dados'."),
                                            dataTableOutput("data_review"),
                                            tags$script("$(document).on('click', '#data_review button', function () {
@@ -272,7 +272,7 @@ shinyApp(
             options = layersControlOptions(collapsed = TRUE)) %>%
           
           # zoom
-          setView(-56, -6, zoom = 5) %>%
+          setView(-56, -7, zoom = 5.3) %>%
           
           # back zoom
           addEasyButton(easyButton(
@@ -381,7 +381,7 @@ shinyApp(
             options = layersControlOptions(collapsed = TRUE)) %>%
           
           # zoom
-          setView(-56, -6, zoom = 5) %>%
+          setView(-56, -7, zoom = 5.3) %>%
           
           # back zoom
           addEasyButton(easyButton(
@@ -505,7 +505,7 @@ shinyApp(
         # check that data object exists and is data frame
         if(nzchar(input$name) && nzchar(input$email) && nzchar(input$institution)) {
           
-          da.gs <- gs_new(paste(input$name, input$email, input$institution,
+          da.gs <- gs_new(paste('peer',input$name, input$email, input$institution,
                                 sub(" ", "_", gsub(":", "-", as.character(Sys.time())))),
                           ws_title = paste(input$name, input$email, input$institution, sep = "_"),
                           input = as.data.table(vals$Data),
