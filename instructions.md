@@ -1,4 +1,4 @@
-**Olá! Obrigado por colaborar com o projeto PEER e o mapeamento das áreas úmidas amazônicas!**
+### **Olá! Obrigado por colaborar com o projeto PEER e o mapeamento das áreas úmidas amazônicas!**
 
 Este aplicativo permite que você marque pontos de referência para tipos conhecidos de habitats nas planícies de inundação na Amazônia. Estes dados serão essenciais para que possamos melhorar os mapas atuais de distribuição destes habitats, para todo o Rio Amazonas e seus tributários.
 
@@ -8,7 +8,7 @@ Caso haja alguma dúvida, entre em contato com Thiago Silva (thiago.sf.silva@une
 
 #### **1) Selecione os pontos de referência**
 
-Para começar a identificar os habitats, clique na aba **'Seleção de Amostras'**, á esquerda. Navegue pelo mapa até encontrar uma região de planície de inundação **que você conheça bem**. A partir daí, selecione um tipo de habitat na janela à direita, **aproxime o zoom a até pelo menos 200 metros**, e começe a clicar em áreas que representem o habitat selecionado. Para identificar diferentes tipos de habitat, basta selecioná-lo na janela à direita, e continuar clicando.
+Para começar a identificar os habitats, clique na aba **'Seleção de Amostras'**, á esquerda. Navegue pelo mapa até encontrar uma região de planície de inundação **que você conheça bem**. A partir daí, selecione um tipo de habitat na janela à direita, **aproxime o zoom a até uma escala de pelo menos 200 metros** (veja barra de escala acima do mapinha de referência, no canto inferior esquerdo), e começe a clicar em áreas que representem o habitat selecionado. Para identificar um tipo diferente de habitat basta trocar a seleção da classe de habitat na janela à direita, e continuar clicando. Nào há problema em trocar de habitat várias vezes, conforme você vai "navegando" a região. Tente identificar o máximo possível de tipos de habitat diferentes dentro do seu conhecimento de campo.
 
 **IMPORTANTE: não tente "adivinhar" habitats em regiões que você não conhece. Isso só piora o nosso trabalho. Concentre seus esforços nas áreas em que você tem conhecimento de campo!**
 
@@ -22,7 +22,9 @@ Para começar a identificar os habitats, clique na aba **'Seleção de Amostras'
 
 #### **2) Revise seus pontos e envie os dados finais**
 
-Quando terminar a coleta de pontos, clique no botão *'Finalizar'* e vá para a aba **'Revisão'**, e clique em **'Desenhar Pontos'**. Nesta aba, você poderá remover pontos errados antes de enviar os resultados. Lembre-se de clicar em *'Desenhar pontos'* cada vez que excluir um ou mais pontos, se quiser visulizar a remoção no mapa. Ao finalizar, clique em *'Enviar Dados'*, preencha suas informações, e finalize. **E obrigado!**
+Quando terminar a coleta de pontos, clique no botão *'Finalizar'* e vá para a aba **'Revisão'**. **Não será mais possível adicionar pontos após a finalização** (a menos que você inicie uma nova sessão). 
+
+Clique em **'Desenhar Pontos'** para visualizar os seus pontos. Se houve algum ponto marcado errado na etapa anterior, procure-o na lista e clique em *'Delete'*. Lembre-se de clicar novamente em *'Desenhar pontos'* cada vez que excluir um ou mais pontos, se quiser conferir a remoção no mapa (não conseguimos descobrir ainda como fazer o mapa se atualizar automaticamente). Depois de conferir e corrigir, clique em *'Enviar Dados'*, preencha suas informações, e finalize. **E obrigado!**
 
 ### **Descrição dos habitats:**
 
@@ -42,7 +44,7 @@ Quando terminar a coleta de pontos, clique no botão *'Finalizar'* e vá para a 
 
 - *Sand Bank (Bancos de areia)*: bancos de areia e praias que ficam expostas durante as águas baixas. *Se você sabe que a área é ocupada por areia em algum momento, marque mesmo que não apareça na imagem.*
 
-- *Bare Rocks (Rochas nuas)*: áreas de rocha exposta, como corredeiras.
+- *Bare Rocks (Rochas nuas)*: áreas de rocha exposta, como corredeiras e pedrais.
 
 - *White Water (Água Branca)*: igarapés, rios e lagos de água branca.
 
